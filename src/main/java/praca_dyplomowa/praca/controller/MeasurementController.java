@@ -5,6 +5,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import praca_dyplomowa.praca.controller.dto.MeasurementCreateDto;
 import praca_dyplomowa.praca.entity.Measurement;
 import praca_dyplomowa.praca.service.MeasurementService;
 
@@ -21,7 +22,7 @@ public class MeasurementController {
     private final MeasurementService measurementService;
 
     @PostMapping
-    public ResponseEntity create(@Valid @RequestBody Measurement measurement){
+    public ResponseEntity create(@Valid @RequestBody MeasurementCreateDto measurement){
         Integer createdMeasurementId = measurementService.create(measurement);
         URI location = ServletUriComponentsBuilder
                 .fromCurrentRequest()

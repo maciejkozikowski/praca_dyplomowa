@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import praca_dyplomowa.praca.controller.dto.MeasurementCreateDto;
 import praca_dyplomowa.praca.entity.Measurement;
 import praca_dyplomowa.praca.repository.MeasurementRepository;
 import praca_dyplomowa.praca.repository.ParameterRepository;
@@ -24,11 +25,14 @@ public class MeasurementService {
     @Autowired
     private final ParameterRepository parameterRepository;
 
-    public Integer create(Measurement model){
+    public Integer create(MeasurementCreateDto model){
+        Measurement measurement = new Measurement();
         if (model.getDate() == null)
-            model.setDate(Instant.now());
-        Measurement createdMeasurement = measurementRepository.save(model);
-        return createdMeasurement.getId();
+            measurement.setDate(Instant.now());
+        measurement.setDate(model.getDate().atZone(ZoneId.of("Europe/Warsaw")).toInstant());
+        measurement.setParameter(parameterRepository.findById(model.getParameter()).get());
+        measurement.setValue(model.getValue());
+        return measurementRepository.save(measurement).getId();
     }
     public List<Measurement> findAll(){
         return measurementRepository.findAll();

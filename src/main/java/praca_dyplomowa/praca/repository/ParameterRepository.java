@@ -12,5 +12,4 @@ public interface ParameterRepository extends JpaRepository<Parameter, Integer> {
     @Query("select p from Parameter p where name like lower(concat('%', :name, '%')) order by p.name asc")
     List<Parameter> findByName(String name);
 
-
 }
