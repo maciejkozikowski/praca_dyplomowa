@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import praca_dyplomowa.praca.entity.Measurement;
 import praca_dyplomowa.praca.entity.Parameter;
 import praca_dyplomowa.praca.repository.MeasurementRepository;
 import praca_dyplomowa.praca.repository.ParameterRepository;
@@ -33,5 +34,10 @@ public class ParameterService {
 
     public List<Parameter> findByName(String name){
         return parameterRepository.findByName(name);
+    }
+
+    public void delete(Integer id){
+        measurementRepository.deleteAll(measurementRepository.findAllByParameterId(id));
+        parameterRepository.deleteById(id);
     }
 }

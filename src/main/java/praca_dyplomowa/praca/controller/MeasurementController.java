@@ -1,11 +1,13 @@
 package praca_dyplomowa.praca.controller;
 
+import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import praca_dyplomowa.praca.controller.dto.MeasurementCreateDto;
+import praca_dyplomowa.praca.controller.dto.StatisticDto;
 import praca_dyplomowa.praca.entity.Measurement;
 import praca_dyplomowa.praca.service.MeasurementService;
 
@@ -59,5 +61,18 @@ public class MeasurementController {
                                                                                 @RequestParam Integer parameterId){
         List<Measurement> measurements = measurementService.findAllByDateBetweenAndParameterId(startDate, endDate, parameterId);
         return ResponseEntity.ok(measurements);
+    }
+
+    @DeleteMapping
+    public void delete(@Valid @RequestParam Integer id){
+        measurementService.delete(id);
+    }
+
+    @GetMapping("/statistics")
+    public ResponseEntity<StatisticDto> statistics(@RequestParam Instant startDate,
+                                                                           @RequestParam Instant endDate,
+                                                                           @RequestParam Integer parameterId){
+        StatisticDto result = measurementService.statistics(startDate, endDate, parameterId);
+        return ResponseEntity.ok(result);
     }
 }

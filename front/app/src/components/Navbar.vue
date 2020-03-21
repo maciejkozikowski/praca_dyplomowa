@@ -1,20 +1,15 @@
 <template>
-    <nav>
-        <v-toolbar>
-        <v-toolbar-title>
-            <v-list>
-        <v-list-tile v-for="link in links" :key="link.text" router :to="link.route">
-          <v-list-tile-action>
-            <v-btn>{{ link.text }}</v-btn>
-          </v-list-tile-action>
-          <v-list-tile-content>
-          </v-list-tile-content>
-        </v-list-tile>
-      </v-list>
-        </v-toolbar-title> 
-        </v-toolbar>
-
-    </nav>
+  <v-bottom-navigation
+    grow
+    color="white"
+    class="navbar"
+    background-color="#4ea832"
+  >
+    <v-btn v-for="link in links" v-bind:key="link.text" :href="link.route">
+      <span>{{link.text}}</span>
+      <v-icon>{{link.icon}}</v-icon>
+    </v-btn>
+  </v-bottom-navigation>
 </template>
 
 <script>
@@ -22,10 +17,10 @@ export default {
     data() {
     return {
       links: [
-        { text: 'Measurements', route: '/' },
-        { text: 'Parameters', route: '/parameters' },
-        { text: 'Statistics', route: '/statistics' },
-      ]
+        { text: 'Measurements', route: '/', icon: "star", info: "Wypisuje bla bla bla"},
+        { text: 'Parameters', route: '/parameters', icon: "priority_high", info: "Wypisuje bla bla bla"},
+        { text: 'Statistics', route: '/statistics', icon:  "signal_cellular_alt", info: "Wypisuje bla bla bla"},
+      ],
     }
     }
 }

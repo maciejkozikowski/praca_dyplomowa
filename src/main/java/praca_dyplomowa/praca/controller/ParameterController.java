@@ -34,4 +34,9 @@ public class ParameterController {
         List<Parameter> parameters = parameterService.findAll();
         return ResponseEntity.ok(parameters);
     }
+
+    @DeleteMapping
+    public void delete(@Valid @RequestParam Integer id){
+        parameterService.delete(id);
+    }
 }
