@@ -13,7 +13,7 @@ public class MeasurementCreateDto {
     @NotNull
     private Float value;
     @NotNull
-    private Integer parameter;
+    private String parameter;
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime date;
 }

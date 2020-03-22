@@ -15,7 +15,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -33,7 +32,7 @@ public class MeasurementService {
         if (model.getDate() == null)
             measurement.setDate(Instant.now());
         measurement.setDate(model.getDate().atZone(ZoneId.of("Europe/Warsaw")).toInstant());
-        measurement.setParameter(parameterRepository.findById(model.getParameter()).get());
+        measurement.setParameter(parameterRepository.findByName(model.getParameter()).get());
         measurement.setValue(model.getValue());
         return measurementRepository.save(measurement).getId();
     }
@@ -88,5 +87,7 @@ public class MeasurementService {
             result.setMinimum(min);
             result.setMedian(median);
         }
+        return result;
+
     }
 }

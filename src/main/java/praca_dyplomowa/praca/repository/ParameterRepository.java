@@ -6,10 +6,12 @@ import org.springframework.stereotype.Repository;
 import praca_dyplomowa.praca.entity.Parameter;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ParameterRepository extends JpaRepository<Parameter, Integer> {
     @Query("select p from Parameter p where name like lower(concat('%', :name, '%')) order by p.name asc")
-    List<Parameter> findByName(String name);
+    List<Parameter> findByNameLike(String name);
 
+    Optional<Parameter> findByName(String name);
 }

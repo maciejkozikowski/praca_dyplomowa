@@ -2,62 +2,46 @@
   <div>
     <v-dialog v-model="dialog" width="300px">
       <template v-slot:activator="{ on }">
-        <v-btn class="red" dark v-on="on" rounded>Dalej</v-btn>
+        <v-btn class="add" dark v-on="on" rounded>Add new parameter</v-btn>
       </template>
 
       <v-card class="form">
         <v-app-bar dark color="#05518b">
-          <v-toolbar-title>Wypełnij Formularz:</v-toolbar-title>
+          <v-toolbar-title>Fill the form:</v-toolbar-title>
           <v-spacer></v-spacer>
         </v-app-bar>
         <v-container class="card">
           <v-form ref="form" v-model="valid" lazy-validation>
             <v-text-field
-              v-model="person.name"
+              v-model="parameter.name"
               required
               :rules="nameRules"
-              label="Imię"
+              label="Parameter name"
               solo
               dense
               prepend-inner-icon="account_circle"
             ></v-text-field>
             <v-text-field
-              v-model="person.surname"
+              v-model="parameter.unit"
               required
-              :rules="surnameRules"
-              label="Nazwisko"
+              :rules="parameterRules"
+              label="Unit"
               solo
               dense
               prepend-inner-icon="account_circle"
             ></v-text-field>
             <v-text-field
-              v-model="person.pesel"
-              :rules="peselRules"
+              v-model="parameter.decimalPoints"
+              :rules="decimalPointsRules"
               required
-              label="PESEL"
+              label="Decimal place"
               solo
-              @change="savePesel"
               dense
               prepend-inner-icon="account_circle"
             ></v-text-field>
-            <v-text-field
-              v-model="person.phoneNumber"
-              :rules="phoneNumberRules"
-              required
-              label="Telefon komórkowy"
-              solo
-              dense
-              prepend-inner-icon="stay_current_portrait"
-            ></v-text-field>
-            <v-text-field
-              v-model="person.email"
-              :rules="emailRules"
-              required
-              label="E-mail"
-              solo
-              dense
-              prepend-inner-icon="email"
-            ></v-text-field>
+            <div class="message" v-if="error">
+              This parameter already exists
+            </div>
             <template>
               <v-menu
                 ref="menu"
@@ -67,86 +51,48 @@
                 offset-y
                 min-width="290px"
               >
-                <template v-slot:activator="{ on }">
-                  <v-text-field
-                    solo
-                    dense
-                    v-model="person.date"
-                    :rules="dateRules"
-                    required
-                    label="Data urodzenia"
-                    prepend-inner-icon="event"
-                    readonly
-                    v-on="on"
-                  ></v-text-field>
-                </template>
-                <v-date-picker
-                  ref="picker"
-                  v-model="person.date"
-                  locale="pl"
-                  :max="new Date().toISOString().substr(0, 10)"
-                  min="1950-01-01"
-                  @change="savePesel"
-                ></v-date-picker>
               </v-menu>
             </template>
           </v-form>
-          <div class="errorMsg" v-if="error">PESEL nie zgadza się z datą urodzenia</div>
           <v-btn
             :disabled="!valid || error"
             @click="validate"
             class="btnCheck red white--text"
-          >Sprawdź bezpłatnie</v-btn>
+            ><v-icon>add</v-icon>Add</v-btn
+          >
         </v-container>
       </v-card>
     </v-dialog>
-    <v-snackbar v-model="snackbar" :multi-line="multiLine">
-      {{ text }}
-      <v-btn color="white" text @click="snackbar = false">Zamknij</v-btn>
-    </v-snackbar>
   </div>
 </template>
 <script>
+import axios from "axios";
+
 export default {
-  data: () => (	{
+  data: () => ({
     dialog: false,
     menu: false,
-    person: {
+    parameter: {
       name: null,
-      surname: null,
-      pesel: null,
-      phoneNumber: null,
-      email: null,
-      date: null
+      unit: null,
+      decimalPoints: null
     },
     multiLine: true,
-    snackbar: false,
-    text: "Dziękuję za uzupełnienie formularza",
     valid: true,
     error: false,
     nameRules: [
-      v => !!v || "Imię jest wymagane",
-      v => (v && v.length <= 20) || "Imię musi być krótsze niż 20 znaków",
-      v => /^[a-zA-Z ]+$/.test(v) || "Imię jest niepoprawne"
+      v => !!v || "Name is required",
+      v => (v && v.length <= 20) || "Name has to be shorter than 20 chars",
+      v => /^[a-zA-Z]+$/.test(v) || "Name is invalid"
     ],
-    surnameRules: [
-      v => !!v || "Nazwisko jest wymagane",
-      v => (v && v.length <= 20) || "Nazwisko musi być krótsze niż 20 znaków",
-      v => /^[a-zA-Z ]+$/.test(v) || "Nazwisko jest niepoprawne"
+    parameterRules: [
+      v => !!v || "Unit is required",
+      v => (v && v.length <= 20) || "Unit has to be shorther than 20 chars"
     ],
-    peselRules: [
-      v => !!v || "PESEL jest wymagany",
-      v => /^[0-9]{11}$/.test(v) || "PESEL jest niepoprawny"
-    ],
-    phoneNumberRules: [
-      v => !!v || "Telefon jest wymagany",
-      v => /^[0-9]{9}$/.test(v) || "Telefon jest niepoprawny"
-    ],
-    emailRules: [
-      v => !!v || "Email jest wymagany",
-      v => /.+@.+\..+/.test(v) || "E-mail jest niepoprawny"
-    ],
-    dateRules: [v => !!v || "Data urodzenia jest wymagana"]
+    decimalPointsRules: [
+      v => !!v || "Decimal place is required",
+      v => /^[0-9]$/.test(v) || "Decimal place is invalid"
+    ]
   }),
   watch: {
     menu(val) {
@@ -154,33 +100,21 @@ export default {
     }
   },
   methods: {
-    savePesel(date) {
-      if (this.person.pesel && this.person.date) {
-        var peselPrepared = this.person.pesel.substring(0, 6);
-        var datePrepared =
-          this.person.date.substring(2, 4) +
-          this.person.date.substring(5, 7) +
-          this.person.date.substring(8, 10);
-        if (peselPrepared == datePrepared) {
-          this.error = false;
-        } else {
-          this.error = true;
-        }
-        this.$refs.menu.save(date);
-      }
-    },
     validate() {
-      if (
-        this.$refs.form.validate() &&
-        this.peselPrepared == this.datePrepared
-      ) {
+      if (this.$refs.form.validate()) {
         this.error = false;
-        this.snackbar = true;
         this.dialog = false;
-        var json = JSON.stringify(this.person);
-        console.log(json);
-      } else {
-        this.error = true;
+        axios
+          .post("http://localhost:8080/parameters/", this.parameter)
+          .then(resp => {
+            console.log(resp.data);
+            window.location.reload();
+          })
+          .catch(error => {
+            console.log(error.response);
+            this.error = true;
+            this.dialog = true;
+          });
       }
     }
   }
@@ -195,15 +129,19 @@ export default {
 .card {
   background-color: #05518b;
 }
+.add {
+  position: fixed;
+  margin-left: 20%;
+  justify-content: center;
+}
 .textField {
   background-color: white;
 }
 .btnCheck {
-  margin-left: 13%;
+  margin-left: 35%;
 }
-.errorMsg {
-  margin-left: 3%;
-  font-size: 14px;
-  color: #ff5252;
+.message{
+  color: red;
+  font-weight: 900;
 }
 </style>

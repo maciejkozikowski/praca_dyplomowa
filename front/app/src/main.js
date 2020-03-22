@@ -2,6 +2,7 @@ import Vue from 'vue'
 import App from './App.vue'
 import vuetify from './plugins/vuetify';
 import router from './router.js'
+import "./plugins/datetime";
 import axios from 'axios'
 import VueAxios from 'vue-axios'
 
