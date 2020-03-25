@@ -10,9 +10,11 @@ import praca_dyplomowa.praca.entity.Measurement;
 import praca_dyplomowa.praca.repository.MeasurementRepository;
 import praca_dyplomowa.praca.repository.ParameterRepository;
 
+import java.lang.reflect.Array;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -50,16 +52,21 @@ public class MeasurementService {
         return measurementRepository.findAllByDateBetween(startPeriod, endPeriod);
     }
 
-    public List<Measurement> findAllByDateBetweenAndParameterId(Instant startDate, Instant endDate, Integer parameterId){
-        return measurementRepository.findAllByDateBetweenAndParameterId(startDate, endDate, parameterId);
+    public List<Measurement> findAllByDateBetweenAndParameterId(LocalDateTime startDate, LocalDateTime endDate, Integer parameterId){
+        Instant startPeriod = startDate.atZone(ZoneId.of("Europe/Warsaw")).toInstant();
+        Instant endPeriod = endDate.atZone(ZoneId.of("Europe/Warsaw")).toInstant();
+        return measurementRepository.findAllByDateBetweenAndParameterId(startPeriod, endPeriod, parameterId);
     }
 
     public void delete(Integer id){
         measurementRepository.deleteById(id);
     }
 
-    public StatisticDto statistics(Instant startDate, Instant endDate, Integer parameterId){
-        List<Measurement> measurements = measurementRepository.findAllByDateBetweenAndParameterId(startDate, endDate, parameterId);
+    public StatisticDto statistics(LocalDateTime startDate, LocalDateTime endDate, String parameter){
+        Instant startPeriod = startDate.atZone(ZoneId.of("Europe/Warsaw")).toInstant();
+        Instant endPeriod = endDate.atZone(ZoneId.of("Europe/Warsaw")).toInstant();
+        Integer parameterId = parameterRepository.findByName(parameter).get().getId();
+        List<Measurement> measurements = measurementRepository.findAllByDateBetweenAndParameterId(startPeriod, endPeriod, parameterId);
         StatisticDto result = new StatisticDto();
         Float sum = 0F;
         Float min = measurements.get(0).getValue();
@@ -71,8 +78,11 @@ public class MeasurementService {
             if(m.getValue() > max)
                 max = m.getValue();
         }
-//        List<Float> values = measurements.stream().map(Measurement::getValue).collect(Collectors.toList());
-        Float[] values = (Float[]) measurements.stream().map(Measurement::getValue).toArray();
+        Float[] values = new Float[measurements.size()];
+        Integer i = 0;
+        for (Measurement m : measurements) {
+            values[i] = m.getValue();
+        }
         Arrays.sort(values);
         Float median;
         if (values.length % 2 == 0)

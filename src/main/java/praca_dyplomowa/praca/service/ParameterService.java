@@ -12,6 +12,7 @@ import praca_dyplomowa.praca.repository.ParameterRepository;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
@@ -35,8 +36,8 @@ public class ParameterService {
         return parameterRepository.findAll();
     }
 
-    public List<Parameter> findByName(String name){
-        return parameterRepository.findByNameLike(name);
+    public Optional<Parameter> findByName(String name){
+        return parameterRepository.findByName(name);
     }
 
     public void delete(Integer id){
