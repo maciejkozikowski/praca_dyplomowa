@@ -40,18 +40,18 @@ public class MeasurementController {
 
     @GetMapping("/filter")
     public ResponseEntity<List<Measurement>> findAll(
-            @RequestParam String startDate,
-            @RequestParam String endDate,
-            @RequestParam String parameter){
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate,
+            @RequestParam(required = false) String parameter){
         List<Measurement> measurements = new ArrayList<>();
         LocalDateTime start = LocalDateTime.now().minusYears(1000);
         LocalDateTime end = LocalDateTime.now().plusYears(1000);
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
-        if(startDate != null)
+        if(!startDate.equals("null"))
             start = LocalDateTime.parse(startDate, formatter);
-        if(endDate != null)
+        if(!endDate.equals("null"))
             end = LocalDateTime.parse(endDate, formatter);
-        if(parameter != null)
+        if(parameterService.findByName(parameter).isPresent())
             measurements = measurementService.findAllByDateBetweenAndParameterId(start, end, parameterService.findByName(parameter).get().getId());
         else
             measurements = measurementService.findAllByDateBetween(start, end);
