@@ -82,6 +82,7 @@ public class MeasurementService {
         Integer i = 0;
         for (Measurement m : measurements) {
             values[i] = m.getValue();
+            i++;
         }
         Arrays.sort(values);
         Float median;

@@ -14,6 +14,7 @@ import praca_dyplomowa.praca.service.ParameterService;
 import javax.validation.Valid;
 import java.net.URI;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -46,11 +47,12 @@ public class MeasurementController {
         List<Measurement> measurements = new ArrayList<>();
         LocalDateTime start = LocalDateTime.now().minusYears(1000);
         LocalDateTime end = LocalDateTime.now().plusYears(1000);
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         if(!startDate.equals("null"))
-            start = LocalDateTime.parse(startDate, formatter);
+            start = LocalDate.parse(startDate, formatter).atStartOfDay();
         if(!endDate.equals("null"))
-            end = LocalDateTime.parse(endDate, formatter);
+            end = LocalDate.parse(endDate, formatter).plusDays(1).atStartOfDay();
+
         if(parameterService.findByName(parameter).isPresent())
             measurements = measurementService.findAllByDateBetweenAndParameterId(start, end, parameterService.findByName(parameter).get().getId());
         else
@@ -58,12 +60,6 @@ public class MeasurementController {
         return ResponseEntity.ok(measurements);
     }
 
-//    @GetMapping("/byparameterid")
-//    public ResponseEntity<List<Measurement>> findAllByParameterId(@RequestParam Integer parameterId){
-//        List<Measurement> measurements = measurementService.findAllByParameterId(parameterId);
-//        return ResponseEntity.ok(measurements);
-//    }
-//
     @GetMapping("/date")
     public ResponseEntity<List<Measurement>> findAllByDateBetween(
             @RequestParam(name = "startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
@@ -71,14 +67,6 @@ public class MeasurementController {
         List<Measurement> measurements = measurementService.findAllByDateBetween(startDate, endDate);
         return ResponseEntity.ok(measurements);
     }
-//
-//    @GetMapping("/dateparam")
-//    public ResponseEntity<List<Measurement>> findAllByDateBetweenAndParameterId(@RequestParam Instant startDate,
-//                                                                                @RequestParam Instant endDate,
-//                                                                                @RequestParam Integer parameterId){
-//        List<Measurement> measurements = measurementService.findAllByDateBetweenAndParameterId(startDate, endDate, parameterId);
-//        return ResponseEntity.ok(measurements);
-//    }
 
     @DeleteMapping
     public void delete(@Valid @RequestParam Integer id){
@@ -87,16 +75,15 @@ public class MeasurementController {
 
     @GetMapping("/statistics")
     public ResponseEntity<StatisticDto> statistics(@RequestParam String startDate,
-                                                                           @RequestParam String endDate,
-                                                                           @RequestParam String parameter){
-
+                                                   @RequestParam String endDate,
+                                                   @RequestParam String parameter){
         LocalDateTime start = LocalDateTime.now().minusYears(1000);
         LocalDateTime end = LocalDateTime.now().plusYears(1000);
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
-        if(startDate != null)
-            start = LocalDateTime.parse(startDate, formatter);
-        if(endDate != null)
-            end = LocalDateTime.parse(endDate, formatter);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        if(!startDate.equals("null"))
+            start = LocalDate.parse(startDate, formatter).atStartOfDay();
+        if(!endDate.equals("null"))
+            end = LocalDate.parse(endDate, formatter).plusDays(1).atStartOfDay();
         StatisticDto result = measurementService.statistics(start, end, parameter);
         return ResponseEntity.ok(result);
     }
