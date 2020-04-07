@@ -2,7 +2,9 @@
   <div>
     <v-dialog v-model="dialog" width="300px">
       <template v-slot:activator="{ on }">
-        <v-btn class="add" dark v-on="on" rounded>Add new measurement</v-btn>
+        <v-btn class="success add" dark v-on="on" rounded>
+          <v-icon>add</v-icon>Add new measurement
+        </v-btn>
       </template>
 
       <v-card class="form">
@@ -20,7 +22,7 @@
               item-value="id"
               solo
               :rules="parameterRules"
-              prepend-inner-icon="account_circle"
+              prepend-inner-icon="list"
             ></v-select>
             <v-text-field
               v-model="measurement.value"
@@ -29,27 +31,22 @@
               label="Value"
               solo
               dense
-              prepend-inner-icon="account_circle"
+              prepend-inner-icon="star_outline"
             ></v-text-field>
-            <div class="datePicker">
-              <datetime
-                class="theme-green datePicker"
-                :minute-step="5"
-                placeholder="Choose date/time"
-                type="datetime"
-                :max-datetime="dateNow.toISOString()"
-                v-model="measurement.date"
-                value-zone="local"
-                zone="local"
-              />
-            </div>
+            <datetime
+              class="datePicker"
+              :minute-step="5"
+              placeholder="Choose date/time"
+              type="datetime"
+              :max-datetime="dateNow.toISOString()"
+              v-model="measurement.date"
+              value-zone="local"
+              zone="local"
+            />
           </v-form>
-          <v-btn
-            :disabled="!valid || error"
-            @click="validate"
-            class="btnCheck green white--text"
-            ><v-icon>add</v-icon>Add</v-btn
-          >
+          <v-btn :disabled="!valid || error" @click="validate" class="btnCheck green white--text">
+            <v-icon>add</v-icon>Add
+          </v-btn>
         </v-container>
       </v-card>
     </v-dialog>
@@ -110,7 +107,8 @@ export default {
           .post("http://localhost:8080/measurements/", this.measurement)
           .then(resp => {
             console.log(resp.data);
-            window.location.reload();
+            this.$emit("updateData");
+            this.$refs.form.reset();
           })
           .catch(error => {
             console.log(error.response);
@@ -140,10 +138,10 @@ export default {
 }
 .add {
   position: fixed;
-  margin-left: 20%;
   justify-content: center;
 }
 .datePicker {
+  cursor: pointer;
   background-color: white;
   margin-bottom: 5%;
   border-radius: 3px;

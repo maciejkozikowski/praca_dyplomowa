@@ -2,7 +2,9 @@
   <div>
     <v-dialog v-model="dialog" width="300px">
       <template v-slot:activator="{ on }">
-        <v-btn class="add" dark v-on="on" rounded>Add new parameter</v-btn>
+        <v-btn class="success add" dark v-on="on" rounded>
+          <v-icon>add</v-icon>Add new parameter
+        </v-btn>
       </template>
 
       <v-card class="form">
@@ -19,7 +21,8 @@
               label="Parameter name"
               solo
               dense
-              prepend-inner-icon="account_circle"
+              prepend-inner-icon="list"
+              @change="duplicatesCheck"
             ></v-text-field>
             <v-text-field
               v-model="parameter.unit"
@@ -28,7 +31,7 @@
               label="Unit"
               solo
               dense
-              prepend-inner-icon="account_circle"
+              prepend-inner-icon="euro_symbol"
             ></v-text-field>
             <v-text-field
               v-model="parameter.decimalPoints"
@@ -37,11 +40,9 @@
               label="Decimal place"
               solo
               dense
-              prepend-inner-icon="account_circle"
+              prepend-inner-icon="format_quote"
             ></v-text-field>
-            <div class="message" v-if="error">
-              This parameter already exists
-            </div>
+            <div class="message" v-if="error">This parameter already exists</div>
             <template>
               <v-menu
                 ref="menu"
@@ -50,16 +51,12 @@
                 transition="scale-transition"
                 offset-y
                 min-width="290px"
-              >
-              </v-menu>
+              ></v-menu>
             </template>
           </v-form>
-          <v-btn
-            :disabled="!valid || error"
-            @click="validate"
-            class="btnCheck red white--text"
-            ><v-icon>add</v-icon>Add</v-btn
-          >
+          <v-btn :disabled="!valid || error" @click="validate" class="btnCheck red white--text">
+            <v-icon>add</v-icon>Add
+          </v-btn>
         </v-container>
       </v-card>
     </v-dialog>
@@ -91,7 +88,7 @@ export default {
     ],
     decimalPointsRules: [
       v => !!v || "Decimal place is required",
-      v => /^[0-9]$/.test(v) || "Decimal place is invalid"
+      v => /^[0-9]$/.test(v) || "Decimal has bo be less than 10"
     ]
   }),
   watch: {
@@ -102,19 +99,26 @@ export default {
   methods: {
     validate() {
       if (this.$refs.form.validate()) {
-        this.error = false;
-        this.dialog = false;
         axios
           .post("http://localhost:8080/parameters/", this.parameter)
           .then(resp => {
+            this.$emit("updateParameterList");
+            this.dialog = false;
             console.log(resp.data);
-            window.location.reload();
+            this.$refs.form.reset();
           })
           .catch(error => {
             console.log(error.response);
             this.error = true;
             this.dialog = true;
           });
+      }
+    },
+    duplicatesCheck() {
+      if (!this.error) {
+        this.validate();
+      } else {
+        this.error = false;
       }
     }
   }
@@ -130,8 +134,8 @@ export default {
   background-color: #05518b;
 }
 .add {
+  margin-top: 5%;
   position: fixed;
-  margin-left: 20%;
   justify-content: center;
 }
 .textField {
@@ -140,7 +144,7 @@ export default {
 .btnCheck {
   margin-left: 35%;
 }
-.message{
+.message {
   color: red;
   font-weight: 900;
 }

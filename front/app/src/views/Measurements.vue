@@ -1,87 +1,92 @@
 <template>
-  <v-layout class="measurements">
-    <v-select
-      :items="parameterNames"
-      label="Choose parameter"
-      v-model="parameters"
-      dense
-      item-value="id"
-      solo
-      prepend-inner-icon="account_circle"
-    ></v-select>
-    <v-container xs10 sm10 md10 lg10>
-      <v-card class="card" v-for="item in data" v-bind:key="item.id">
-        <h1>{{ item.parameter.name }}</h1>
-        <h1>{{ item.value.toFixed(item.parameter.decimalPoints) }} {{ item.parameter.unit }}</h1>
-        <h1>{{ item.date.substring(11, 16) }} {{ item.date.substring(8, 10) }}-{{ item.date.substring(5, 8) }}{{ item.date.substring(0, 4) }}</h1>
-        <v-btn @click="deleteMeasurement(item.parameter.id)"
-          ><v-icon>delete_forever</v-icon>Delete</v-btn
-        >
-      </v-card>
+  <div class="measurements">
+    <v-container class="filter">
+      <FilterComponent
+        :parameter="parameter"
+        :startDate="startDate"
+        :endDate="endDate"
+        @updateData="getMeasurements"
+        @resetList="resetMeasurements"
+      />
+      <NewMeasurement @updateData="resetMeasurements" class="newMeasurement"/>
     </v-container>
-    <v-container xs2 sm2 md2 lg2>
-      <NewMeasurement />
-    </v-container>
-  </v-layout>
+    <v-layout xs10 sm10 md10 lg10>
+      <MeasurementsTable :measurements="data" class="table" @updateData="resetMeasurements" />
+      
+    </v-layout>
+  </div>
 </template>
 <script>
 import axios from "axios";
 import NewMeasurement from "../components/Measurement/NewMeasurement";
+import MeasurementsTable from "../components/Measurement/MeasurementsTable";
+import FilterComponent from "../components/Measurement/FilterComponent";
 
 export default {
   name: "measurements",
   components: {
-    NewMeasurement
+    MeasurementsTable,
+    NewMeasurement,
+    FilterComponent
   },
   data() {
     return {
       data: [],
-      error: false,
-      parameters: [],
-      parameterNames: []
+      parameter: null,
+      startDate: null,
+      endDate: null
     };
   },
   methods: {
-    deleteMeasurement(id) {
+    getMeasurements(parameter, startDate, endDate) {
       axios
-        .delete(`http://localhost:8080/measurements?id=${id}`)
+        .get(
+          `http://localhost:8080/measurements/filter?parameter=${parameter}&startDate=${startDate}&endDate=${endDate}`
+        )
         .then(response => {
-          console.log(response);
-          window.location.reload();
+          this.data = response.data;
         })
         .catch(error => {
-          console.log(error.response);
+          console.log(error);
+        });
+    },
+    resetMeasurements() {
+      axios
+        .get(
+          `http://localhost:8080/measurements/filter?parameter=null&startDate=null&endDate=null`
+        )
+        .then(response => {
+          this.data = response.data;
+        })
+        .catch(error => {
+          console.log(error);
         });
     }
   },
   mounted() {
-    axios
-      .get("http://localhost:8080/measurements/")
-      .then(response => {
-        this.data = response.data;
-      })
-      .catch(error => {
-        console.log(error);
-        this.error = true;
-      });
-    axios
-      .get("http://localhost:8080/parameters")
-      .then(response => {
-        this.parameters = response.data;
-        this.parameters.map(parameter => {
-          this.parameterNames.push(parameter.name);
-        });
-      })
-      .catch(error => {
-        console.log(error);
-        this.error = true;
-      });
+    this.getMeasurements(this.parameter, this.startDate, this.endDate);
   }
 };
 </script>
 <style scoped>
-.card {
-  margin-top: 5%;
-  padding: 40px;
+.newMeasurement {
+  padding: 20px
+}
+.table {
+  margin-left: 2vw;
+  margin-top: 2vw;
+  margin-right: 8vw;
+  width: 65vw;
+  background-image: linear-gradient(
+    to left,
+    #d5d4d0 0%,
+    #d5d4d0 1%,
+    #eeeeec 31%,
+    #efeeec 75%,
+    #e9e9e7 100%
+  );
+}
+.filter {
+  width: 60vw;
 }
 </style>
