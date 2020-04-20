@@ -6,7 +6,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
-import java.time.Instant;
 import java.util.List;
 
 @Getter
@@ -14,22 +13,19 @@ import java.util.List;
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "measurements")
-public class Measurement {
+@Table(name = "users")
+public class User {
     @javax.persistence.Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer Id;
 
-    private Float value;
+    private String name;
+    private String password;
+    private Boolean isAdmin;
 
-    @ManyToOne
-    @JoinColumn(name = "parameter_id", nullable = false)
-    private Parameter parameter;
+    @ManyToMany
+    @JoinColumn(name = "measurement_id", nullable = true)
+    private List<Measurement> measurementList;
 
-    private Instant date;
-
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
 
 }

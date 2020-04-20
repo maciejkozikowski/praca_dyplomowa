@@ -7,13 +7,16 @@ import org.springframework.stereotype.Service;
 import praca_dyplomowa.praca.controller.dto.MeasurementCreateDto;
 import praca_dyplomowa.praca.controller.dto.StatisticDto;
 import praca_dyplomowa.praca.entity.Measurement;
+import praca_dyplomowa.praca.entity.User;
 import praca_dyplomowa.praca.repository.MeasurementRepository;
 import praca_dyplomowa.praca.repository.ParameterRepository;
+import praca_dyplomowa.praca.repository.UserRepository;
 
 import java.lang.reflect.Array;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -28,45 +31,54 @@ public class MeasurementService {
     private final MeasurementRepository measurementRepository;
     @Autowired
     private final ParameterRepository parameterRepository;
+    @Autowired
+    private final UserRepository userRepository;
 
-    public Integer create(MeasurementCreateDto model){
+    public Integer create(MeasurementCreateDto model, Integer userId){
         Measurement measurement = new Measurement();
         if (model.getDate() == null)
-            measurement.setDate(Instant.now());
-        measurement.setDate(model.getDate().atZone(ZoneId.of("Europe/Warsaw")).toInstant());
+            model.setDate(LocalDateTime.now());
+        measurement.setDate(model.getDate().toInstant(ZoneOffset.ofHours(0)));
         measurement.setParameter(parameterRepository.findByName(model.getParameter()).get());
         measurement.setValue(model.getValue());
-        return measurementRepository.save(measurement).getId();
+        measurement.setUser(userRepository.findById(userId).get());
+        Integer measurementId = measurementRepository.save(measurement).getId();
+        User user = userRepository.findById(userId).get();
+        user.getMeasurementList().add(measurement);
+        return measurementId;
     }
     public List<Measurement> findAll(){
         return measurementRepository.findAll();
     }
 
-    public List<Measurement> findAllByParameterId(Integer parameterId){
-        return measurementRepository.findAllByParameterId(parameterId);
-    }
 
-    public List<Measurement> findAllByDateBetween(LocalDateTime startDate, LocalDateTime endDate){
+    public List<Measurement> findAllByDateBetween(
+            LocalDateTime startDate, LocalDateTime endDate, Integer userId){
         Instant startPeriod = startDate.atZone(ZoneId.of("Europe/Warsaw")).toInstant();
         Instant endPeriod = endDate.atZone(ZoneId.of("Europe/Warsaw")).toInstant();
-        return measurementRepository.findAllByDateBetween(startPeriod, endPeriod);
+        return measurementRepository.findAllByDateBetweenAndUser(
+                startPeriod, endPeriod, userRepository.findById(userId).get());
     }
 
-    public List<Measurement> findAllByDateBetweenAndParameterId(LocalDateTime startDate, LocalDateTime endDate, Integer parameterId){
+    public List<Measurement> findAllByDateBetweenAndParameterId(
+            LocalDateTime startDate, LocalDateTime endDate, Integer parameterId, Integer userId){
         Instant startPeriod = startDate.atZone(ZoneId.of("Europe/Warsaw")).toInstant();
         Instant endPeriod = endDate.atZone(ZoneId.of("Europe/Warsaw")).toInstant();
-        return measurementRepository.findAllByDateBetweenAndParameterId(startPeriod, endPeriod, parameterId);
+        return measurementRepository.findAllByDateBetweenAndParameterIdAndUser(
+                startPeriod, endPeriod, parameterId, userRepository.findById(userId).get());
     }
 
     public void delete(Integer id){
         measurementRepository.deleteById(id);
     }
 
-    public StatisticDto statistics(LocalDateTime startDate, LocalDateTime endDate, String parameter){
+    public StatisticDto statistics(
+            LocalDateTime startDate, LocalDateTime endDate, String parameter, Integer userId){
         Instant startPeriod = startDate.atZone(ZoneId.of("Europe/Warsaw")).toInstant();
         Instant endPeriod = endDate.atZone(ZoneId.of("Europe/Warsaw")).toInstant();
         Integer parameterId = parameterRepository.findByName(parameter).get().getId();
-        List<Measurement> measurements = measurementRepository.findAllByDateBetweenAndParameterId(startPeriod, endPeriod, parameterId);
+        List<Measurement> measurements = measurementRepository.findAllByDateBetweenAndParameterIdAndUser(
+                startPeriod, endPeriod, parameterId, userRepository.findById(userId).get());
         StatisticDto result = new StatisticDto();
         Float sum = 0F;
         Float min = measurements.get(0).getValue();

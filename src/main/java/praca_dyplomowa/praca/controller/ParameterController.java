@@ -19,8 +19,8 @@ public class ParameterController {
     private final ParameterService parameterService;
 
     @PostMapping
-    public ResponseEntity create(@Valid @RequestBody Parameter parameter) throws Exception {
-        Integer createdParameterId = parameterService.create(parameter);
+    public ResponseEntity create(@Valid @RequestBody Parameter parameter, @RequestParam Integer userId) throws Exception {
+        Integer createdParameterId = parameterService.create(parameter, userId);
         URI location = ServletUriComponentsBuilder
                 .fromCurrentRequest()
                 .path("/{id}")
@@ -37,8 +37,8 @@ public class ParameterController {
     }
 
     @DeleteMapping
-    public void delete(@Valid @RequestParam Integer id){
-        parameterService.delete(id);
+    public void delete(@Valid @RequestParam Integer id, @RequestParam Integer userId) throws Exception {
+        parameterService.delete(id, userId);
     }
 
     @GetMapping("/names")

@@ -6,8 +6,10 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import praca_dyplomowa.praca.controller.dto.ParameterListDto;
 import praca_dyplomowa.praca.entity.Parameter;
+import praca_dyplomowa.praca.entity.User;
 import praca_dyplomowa.praca.repository.MeasurementRepository;
 import praca_dyplomowa.praca.repository.ParameterRepository;
+import praca_dyplomowa.praca.repository.UserRepository;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -23,12 +25,16 @@ public class ParameterService {
     private final MeasurementRepository measurementRepository;
     @Autowired
     private final ParameterRepository parameterRepository;
+    @Autowired
+    private final UserRepository userRepository;
 
-    public Integer create(Parameter model) throws Exception {
+    public Integer create(Parameter model, Integer userId) throws Exception {
+        if (!userRepository.findById(userId).get().getIsAdmin())
+            throw new Exception("You're not an admin!");
         if (model.getDateAdded() == null)
             model.setDateAdded(Instant.now());
         if (parameterRepository.findByName(model.getName()).isPresent())
-            throw new Exception("Parametr o podanej nazwie już istnieje");
+            throw new Exception("Parameter with this name exists");
         return parameterRepository.save(model).getId();
     }
 
@@ -40,7 +46,9 @@ public class ParameterService {
         return parameterRepository.findByName(name);
     }
 
-    public void delete(Integer id){
+    public void delete(Integer id, Integer userId) throws Exception {
+        if (!userRepository.findById(userId).get().getIsAdmin())
+            throw new Exception("You're not an admin!");
         measurementRepository.deleteAll(measurementRepository.findAllByParameterId(id));
         parameterRepository.deleteById(id);
     }
